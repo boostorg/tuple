@@ -20,16 +20,59 @@
 using namespace std;
 using namespace boost;
 
+// ----------------------------------------------------------------------------
+// helpers 
+// ----------------------------------------------------------------------------
 
+class A {}; 
+class B {}; 
+class C {};
 
+// classes with different kinds of conversions
+class AA {};
+class BB : public AA {}; 
+struct CC { CC() {} CC(const BB& b) {} };
+struct DD { operator CC() const { return CC(); }; };
+
+// something to prevent warnings for unused variables
 template<class T> void dummy(const T&) {}
 
-class A {}; class B {}; class C {};
+// no public default constructor
+class foo {
+public:
+  explicit foo(int v) : val(v) {}
 
-typedef int(t)(float);
+  bool operator==(const foo& other) const  {
+    return val == other.val;
+  }
 
-// some arbitrary tuple definitions
+private:
+  foo() {}
+  int val;
+};
+
+// another class without a public default constructor
+class no_def_constructor {
+  no_def_constructor() {}
+public:
+  no_def_constructor(std::string) {}
+};
+
+// A non-copyable class 
+class no_copy {
+  no_copy(const no_copy&) {}
+public:
+  no_copy() {};
+};
+
+
+// ----------------------------------------------------------------------------
+// Testing different element types --------------------------------------------
+// ----------------------------------------------------------------------------
+
+
 typedef tuple<int> t1;
+
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
 typedef tuple<double&, const double&, const double, double*, const double*> t2;
 typedef tuple<A, int(*)(char, int), C> t3;
@@ -43,55 +86,73 @@ typedef tuple<B(A::*)(C&), A&> t7;
 
 #endif
 
-// A non-copyable class
-class no_copy {
-  no_copy(const no_copy&) {}
-public:
-  no_copy() {};
-};
+// -----------------------------------------------------------------------
+// -tuple construction tests ---------------------------------------------
+// -----------------------------------------------------------------------
 
-no_copy y;
 
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+no_copy y;
 tuple<no_copy&> x = tuple<no_copy&>(y); // ok
 #endif
+
 #ifdef E1
 tuple<no_copy> v1;  // should faild
 #endif
 
-char cs[10];
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+char cs[10];
 tuple<char(&)[10]> v2(cs);  // ok
 #endif
+
 #ifdef E2
 tuple<char[10]> v3;  // should fail, arrays must be stored as references
 #endif
 
+void
+construction_test()
+{
+  tuple<int> t1; 
+  BOOST_TEST(get<0>(t1) == int());
+  
+  tuple<float> t2(5.5f);
+  BOOST_TEST(get<0>(t2) > 5.4f && get<0>(t2) < 5.6f);
 
-// -tuple construction tests ------------------------------------
+  tuple<foo> t3(foo(12));
+  BOOST_TEST(get<0>(t3) == foo(12));
 
-// a class without a public default constructor
-class no_def_constructor {
-  no_def_constructor() {}
-public:
-  no_def_constructor(std::string) {} // can be constructed with a string
-  };
+  tuple<double> t4(t2);
+  BOOST_TEST(get<0>(t4) > 5.4 && get<0>(t4) < 5.6);
 
+  tuple<int, float> t5;
+  BOOST_TEST(get<0>(t5) == int());
+  BOOST_TEST(get<1>(t5) == float());
 
-void foo1() {
+  tuple<int, float> t6(12, 5.5f);
+  BOOST_TEST(get<0>(t6) == 12);
+  BOOST_TEST(get<1>(t6) > 5.4f && get<1>(t6) < 5.6f);
+
+  tuple<int, float> t7(t6);
+  BOOST_TEST(get<0>(t7) == 12);
+  BOOST_TEST(get<1>(t7) > 5.4f && get<1>(t7) < 5.6f);
+
+  tuple<long, double> t8(t6);
+  BOOST_TEST(get<0>(t8) == 12);
+  BOOST_TEST(get<1>(t8) > 5.4f && get<1>(t8) < 5.6f);
 
 #ifdef E3
   dummy(tuple<no_def_constructor, no_def_constructor, no_def_constructor>()); 
   // should fail
-
 #endif
-  dummy( tuple<no_def_constructor, no_def_constructor, no_def_constructor>(
-                      std::string("Jaba"),   // ok, since the default 
-                      std::string("Daba"),   // constructor is not used
-                      std::string("Doo")));
-}
 
-void foo2() {
+  dummy( 
+    tuple<no_def_constructor, no_def_constructor, no_def_constructor>(
+       std::string("Jaba"),   // ok, since the default 
+       std::string("Daba"),   // constructor is not used
+       std::string("Doo")
+    )
+  );
+
 // testing default values
   dummy(tuple<int, double>());
   dummy(tuple<int, double>(1));
@@ -102,85 +163,27 @@ void foo2() {
   dummy(tuple<const double&>()); // likewise
 #endif
 
-  double dd = 5;
+
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+  double dd = 5;
   dummy(tuple<double&>(dd)); // ok
+
+  dummy(tuple<const double&>(dd+3.14)); // ok, but dangerous
 #endif
 
 #ifdef E5
-  dummy(tuple<double&>(dd+3.14)); // should fail, temporary to non-const reference
+  dummy(tuple<double&>(dd+3.14)); // should fail, 
+                                  // temporary to non-const reference
 #endif
-#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-  dummy(tuple<const double&>(dd+3.14)); // ok, but potentially dangerous
-#endif
+
 }
 
 
+// ----------------------------------------------------------------------------
+// - testing element access ---------------------------------------------------
+// ----------------------------------------------------------------------------
 
-// make_tuple ------------------------------------------
-
-
-   void foo3() {
-#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-    A a; B b;
-    const A ca = a;
-    make_tuple(cref(a), b);
-    make_tuple(ref(a), b);
-    make_tuple(ref(a), cref(b));
-
-    make_tuple(ref(ca));
-#endif
-     
-
-#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-    make_tuple("Donald", "Daisy"); // should work;
-#endif
-#ifdef E7
-    std::make_pair("Doesn't","Work"); // fails
-#endif
-// You can store a reference to a function in a tuple
-#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-    tuple<void(&)()> adf(foo3);
-
-    dummy(adf); // avoid warning for unused variable
-#endif
- 
-// But make_tuple doesn't work 
-// with function references, since it creates a const qualified function type
-
-//   make_tuple(foo3);
-  
-// With function pointers, make_tuple works just fine
-
-#if !defined(__BORLANDC__) || __BORLAND__ > 0x0551
-   make_tuple(&foo3);
-#endif
-      
-
-
-      
-// NOTE:
-//
-// wrapping it the function reference with ref helps on gcc 2.95.2.
-// on edg 2.43. it results in a catastrophic error?
-
-// make_tuple(ref(foo3));
-
-// It seems that edg can't use implicitly the ref's conversion operator, e.g.:
-// typedef void (&foo3type) (void);
-// foo3type foo3ref = static_cast<foo3type>(ref(foo3)); // works fine 
-// foo3type foo3ref = ref(foo3);                        // error
-
-// This is probably not a very common situation, so currently
-// I don't know how which compiler is right (JJ)
-      
-}
-
-
-
-// - testing element access
-
-void foo4() 
+void element_access_test() 
 {
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
   double d = 2.7; 
@@ -219,51 +222,209 @@ void foo4()
 #endif
 }
 
+
+// ----------------------------------------------------------------------------
+// - copying tuples -----------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+
+
+void
+copy_test()
+{
+  tuple<int, char> t1(4, 'a');
+  tuple<int, char> t2(5, 'b');
+  t2 = t1;
+  BOOST_TEST(get<0>(t1) == get<0>(t2));
+  BOOST_TEST(get<1>(t1) == get<1>(t2));
+
+  tuple<long, std::string> t3(2, "a");
+  t3 = t1;
+  BOOST_TEST((double)get<0>(t1) == get<0>(t3));
+  BOOST_TEST(get<1>(t1) == get<1>(t3)[0]);
+
 // testing copy and assignment with implicit conversions between elements
 // testing tie
 
-  class AA {};
-  class BB : public AA {};
-  struct CC { CC() {} CC(const BB& b) {} };
-  struct DD { operator CC() const { return CC(); }; };
+  tuple<char, BB*, BB, DD> t;
+  tuple<int, AA*, CC, CC> a(t);
+  a = t;
 
-  void foo5() {
-    tuple<char, BB*, BB, DD> t;
-    tuple<int, AA*, CC, CC> a(t);
-    a = t;
-  }
+  int i; char c; double d;
+  tie(i, c, d) = make_tuple(1, 'a', 5.5);
+  
+  BOOST_TEST(i==1);
+  BOOST_TEST(c=='a');
+  BOOST_TEST(d>5.4 && d<5.6);
+}
 
-  void foo6() {
-    int i; char c; double d;
-    tie(i, c, d) = make_tuple(1, 'a', 5.5);
-    BOOST_TEST(i==1);
-    BOOST_TEST(c=='a');
-    BOOST_TEST(d==5.5);
-  }
+void
+mutate_test()
+{
+  tuple<int, float, bool, foo> t1(5, 12.2f, true, foo(4));
+  get<0>(t1) = 6;
+  get<1>(t1) = 2.2f;
+  get<2>(t1) = false;
+  get<3>(t1) = foo(5);
 
-// testing tie
+  BOOST_TEST(get<0>(t1) == 6);
+  BOOST_TEST(get<1>(t1) > 2.1f && get<1>(t1) < 2.3f);
+  BOOST_TEST(get<2>(t1) == false);
+  BOOST_TEST(get<3>(t1) == foo(5));
+}
+
+// ----------------------------------------------------------------------------
+// make_tuple tests -----------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+void
+make_tuple_test()
+{
+  tuple<int, char> t1 = make_tuple(5, 'a');
+  BOOST_TEST(get<0>(t1) == 5);
+  BOOST_TEST(get<1>(t1) == 'a');
+
+  tuple<int, std::string> t2;
+  t2 = make_tuple((short int)2, std::string("Hi"));
+  BOOST_TEST(get<0>(t2) == 2);
+  BOOST_TEST(get<1>(t2) == "Hi");
+
+
+#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+    A a; B b;
+    const A ca = a;
+    make_tuple(cref(a), b);
+    make_tuple(ref(a), b);
+    make_tuple(ref(a), cref(b));
+
+    make_tuple(ref(ca));
+#endif
+     
+// the result of make_tuple is assignable:
+   BOOST_TEST(make_tuple(2, 4, 6) == 
+	     (make_tuple(1, 2, 3) = make_tuple(2, 4, 6)));
+
+#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+    make_tuple("Donald", "Daisy"); // should work;
+#endif
+#ifdef E7
+    std::make_pair("Doesn't","Work"); // fails
+#endif
+
+// You can store a reference to a function in a tuple
+#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+    tuple<void(&)()> adf(make_tuple_test);
+
+    dummy(adf); // avoid warning for unused variable
+#endif
+ 
+// But make_tuple doesn't work 
+// with function references, since it creates a const qualified function type
+
+//   make_tuple(make_tuple_test);
+  
+// With function pointers, make_tuple works just fine
+
+#if !defined(__BORLANDC__) || __BORLAND__ > 0x0551
+   make_tuple(&make_tuple_test);
+#endif
+      
+// NOTE:
+//
+// wrapping it the function reference with ref helps on gcc 2.95.2.
+// on edg 2.43. it results in a catastrophic error?
+
+// make_tuple(ref(foo3));
+
+// It seems that edg can't use implicitly the ref's conversion operator, e.g.:
+// typedef void (&func_t) (void);
+// func_t fref = static_cast<func_t>(ref(make_tuple_test)); // works fine 
+// func_t fref = ref(make_tuple_test);                        // error
+
+// This is probably not a very common situation, so currently
+// I don't know how which compiler is right (JJ)
+}
+
+void
+tie_test()
+{
+  int a;
+  char b;
+  foo c(5);
+
+  tie(a, b, c) = make_tuple(2, 'a', foo(3));
+  BOOST_TEST(a == 2);
+  BOOST_TEST(b == 'a');
+  BOOST_TEST(c == foo(3));
+
+  tie(a, tuples::ignore, c) = make_tuple((short int)5, false, foo(5));
+  BOOST_TEST(a == 5);
+  BOOST_TEST(b == 'a');
+  BOOST_TEST(c == foo(5));
+
 // testing assignment from std::pair
-void foo7() {
    int i, j; 
    tie (i, j) = std::make_pair(1, 2);
    BOOST_TEST(i == 1 && j == 2);
 
-   tuple<int, int, float> a;
+   tuple<int, int, float> ta;
 #ifdef E11
-   a = std::make_pair(1, 2); // should fail, tuple is of length 3, not 2
+   ta = std::make_pair(1, 2); // should fail, tuple is of length 3, not 2
 #endif
 
-// the result of make_tuple is assignable:
-   BOOST_TEST(make_tuple(2, 4, 6) == 
-	     (make_tuple(1, 2, 3) = make_tuple(2, 4, 6)));
-  
-    dummy(a);
+   dummy(ta);
 }
 
-// Testing cons lists
-void foo8()
+
+// ----------------------------------------------------------------------------
+// - testing tuple equality   -------------------------------------------------
+// ----------------------------------------------------------------------------
+
+void
+equality_test()
+{
+  tuple<int, char> t1(5, 'a');
+  tuple<int, char> t2(5, 'a');
+  BOOST_TEST(t1 == t2);
+
+  tuple<int, char> t3(5, 'b');
+  tuple<int, char> t4(2, 'a');
+  BOOST_TEST(t1 != t3);
+  BOOST_TEST(t1 != t4);
+}
+
+
+// ----------------------------------------------------------------------------
+// - testing tuple comparisons  -----------------------------------------------
+// ----------------------------------------------------------------------------
+
+void
+ordering_test()
+{
+  tuple<int, float> t1(4, 3.3f);
+  tuple<short, float> t2(5, 3.3f);
+  tuple<long, double> t3(5, 4.4);
+  BOOST_TEST(t1 < t2);
+  BOOST_TEST(t1 <= t2);
+  BOOST_TEST(t2 > t1);
+  BOOST_TEST(t2 >= t1);
+  BOOST_TEST(t2 < t3);
+  BOOST_TEST(t2 <= t3);
+  BOOST_TEST(t3 > t2);
+  BOOST_TEST(t3 >= t2);
+
+}
+
+
+// ----------------------------------------------------------------------------
+// - testing cons lists -------------------------------------------------------
+// ----------------------------------------------------------------------------
+void cons_test()
 {
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+  using tuples::cons;
+  using tuples::null_type;
+
   cons<volatile float, null_type> a(1, null_type());
   cons<const int, cons<volatile float, null_type> > b(2,a);
   int i = 3;
@@ -275,27 +436,32 @@ void foo8()
 #endif
 }
 
-// Testing const tuples
-void foo9()
+// ----------------------------------------------------------------------------
+// - testing const tuples -----------------------------------------------------
+// ----------------------------------------------------------------------------
+void const_tuple_test()
 {
   const tuple<int, float> t1(5, 3.3f);
   BOOST_TEST(get<0>(t1) == 5);
   BOOST_TEST(get<1>(t1) == 3.3f);
 }
 
-// --------------------------------
-// ----------------------------
+
+// ----------------------------------------------------------------------------
+// - main ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
 int test_main(int, char *[]) {
 
-  foo1();
-  foo2();
-  foo3();
-  foo4();
-  foo5();
-  foo6();
-  foo7();
-  foo8();
-  foo9();
-
+  construction_test();
+  element_access_test();
+  copy_test();
+  mutate_test();
+  make_tuple_test();
+  tie_test();
+  equality_test();
+  ordering_test();
+  cons_test();
+  const_tuple_test();
   return 0;
 }

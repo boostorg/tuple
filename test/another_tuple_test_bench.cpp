@@ -1,7 +1,5 @@
-//  tuple_test_bench.cpp  --------------------------------
+//  another_tuple_test_bench.cpp  --------------------------------
 //
-// Defining any of E1 to E5 or E7 to E11 opens some illegal code that 
-// should cause the compliation to fail.
 
 #define BOOST_INCLUDE_MAIN  // for testing, include rather than link
 #include <boost/test/test_tools.hpp>    // see "Header Implementation Option"
@@ -111,7 +109,7 @@ tie_test()
   BOOST_TEST(b == 5.5f);
   BOOST_TEST(c == foo(3));
 
-  tie(a, ignore, c) = make_tuple((short int)5, false, foo(5));
+  tie(a, tuples::ignore, c) = make_tuple((short int)5, false, foo(5));
   BOOST_TEST(a == 5);
   BOOST_TEST(b == 5.5f);
   BOOST_TEST(c == foo(5));
