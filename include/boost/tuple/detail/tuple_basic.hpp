@@ -36,15 +36,14 @@
 #include "boost/type_traits/cv_traits.hpp"
 							    
 namespace boost {
+namespace tuples {
 
 // -- null_type --------------------------------------------------------
 struct null_type {};
 
 // a helper function to provide a const null_type type temporary
 namespace detail {
-namespace tuples {
   inline const null_type cnull_type() { return null_type(); }
-} // end tuples
 } // end detail
 
 // - cons forward declaration -----------------------------------------------
@@ -65,7 +64,6 @@ template<class T> struct tuple_length;
 
 
 namespace detail {
-namespace tuples {
 
 // -- generate error template, referencing to non-existing members of this 
 // template is used to produce compilation errors intentionally
@@ -138,7 +136,6 @@ struct element<0> {
   }
 };
 
-} // end of namespace tuples
 } // end of namespace detail
 
 
@@ -198,7 +195,7 @@ inline typename tuple_access_traits<
                   typename tuple_element<N, cons<HT, TT> >::type
                 >::non_const_type
 get(cons<HT, TT>& c) { 
-  return detail::tuples::element<N>::template 
+  return detail::element<N>::template 
          get<
            typename tuple_access_traits<
              typename tuple_element<N, cons<HT, TT> >::type
@@ -213,7 +210,7 @@ inline typename tuple_access_traits<
                   typename tuple_element<N, cons<HT, TT> >::type
                 >::const_type
 get(const cons<HT, TT>& c) { 
-  return detail::tuples::element<N>::template 
+  return detail::element<N>::template 
          get<
            typename tuple_access_traits<
              typename tuple_element<N, cons<HT, TT> >::type
@@ -246,7 +243,7 @@ struct cons {
   typename tuple_access_traits<tail_type>::const_type 
   get_tail() const { return tail; }  
 
-  cons() : head(detail::tuples::default_arg<HT>::f()), tail() {}
+  cons() : head(detail::default_arg<HT>::f()), tail() {}
   // the argument for head is not strictly needed, but it prevents 
   // array type elements. This is good, since array type elements 
   // cannot be supported properly in any case (no assignment, 
@@ -261,7 +258,7 @@ struct cons {
   cons( T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, 
         T6& t6, T7& t7, T8& t8, T9& t9, T10& t10 ) 
     : head (t1), 
-      tail (t2, t3, t4, t5, t6, t7, t8, t9, t10, detail::tuples::cnull_type())
+      tail (t2, t3, t4, t5, t6, t7, t8, t9, t10, detail::cnull_type())
       {}
 
   template <class HT2, class TT2>
@@ -320,7 +317,7 @@ struct cons<HT, null_type> {
   
   const null_type get_tail() const { return null_type(); }  
 
-  cons() : head(detail::tuples::default_arg<HT>::f()) {}
+  cons() : head(detail::default_arg<HT>::f()) {}
 
   cons(typename tuple_access_traits<head_type>::parameter_type h,
        const null_type& = null_type())
@@ -375,7 +372,6 @@ struct tuple_length<null_type> {
 
 
 namespace detail {
-namespace tuples {
 
 // Tuple to cons mapper --------------------------------------------------
 template <class T0, class T1, class T2, class T3, class T4, 
@@ -395,7 +391,6 @@ struct map_tuple_to_cons<null_type, null_type, null_type, null_type, null_type, 
   typedef null_type type;
 };
 
-} // end tuples
 } // end detail
 
 // -------------------------------------------------------------------
@@ -404,11 +399,11 @@ template <class T0, class T1, class T2, class T3, class T4,
           class T5, class T6, class T7, class T8, class T9>
 
 class tuple : 
-  public detail::tuples::map_tuple_to_cons<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type   
+  public detail::map_tuple_to_cons<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type   
 {
 public:
   typedef typename 
-    detail::tuples::map_tuple_to_cons<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type inherited;
+    detail::map_tuple_to_cons<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type inherited;
   typedef typename inherited::head_type head_type;
   typedef typename inherited::tail_type tail_type;  
 
@@ -416,25 +411,25 @@ public:
 // tuple_access_traits<T>::parameter_type takes non-reference types as const T& 
   explicit tuple(
     typename tuple_access_traits<T0>::parameter_type t0 
-      = detail::tuples::default_arg<T0>::f(),
+      = detail::default_arg<T0>::f(),
     typename tuple_access_traits<T1>::parameter_type t1 
-      = detail::tuples::default_arg<T1>::f(),
+      = detail::default_arg<T1>::f(),
     typename tuple_access_traits<T2>::parameter_type t2 
-      = detail::tuples::default_arg<T2>::f(),
+      = detail::default_arg<T2>::f(),
     typename tuple_access_traits<T3>::parameter_type t3 
-      = detail::tuples::default_arg<T3>::f(),
+      = detail::default_arg<T3>::f(),
     typename tuple_access_traits<T4>::parameter_type t4 
-      = detail::tuples::default_arg<T4>::f(),
+      = detail::default_arg<T4>::f(),
     typename tuple_access_traits<T5>::parameter_type t5 
-      = detail::tuples::default_arg<T5>::f(),
+      = detail::default_arg<T5>::f(),
     typename tuple_access_traits<T6>::parameter_type t6 
-      = detail::tuples::default_arg<T6>::f(),
+      = detail::default_arg<T6>::f(),
     typename tuple_access_traits<T7>::parameter_type t7 
-      = detail::tuples::default_arg<T7>::f(),
+      = detail::default_arg<T7>::f(),
     typename tuple_access_traits<T8>::parameter_type t8 
-      = detail::tuples::default_arg<T8>::f(),
+      = detail::default_arg<T8>::f(),
     typename tuple_access_traits<T9>::parameter_type t9 
-      = detail::tuples::default_arg<T9>::f())
+      = detail::default_arg<T9>::f())
 
         : inherited(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) {}
 
@@ -469,7 +464,6 @@ public:
 
 // Swallows any assignment   (by Doug Gregor)
 namespace detail {
-namespace tuples {
 
 struct swallow_assign {
       
@@ -478,12 +472,12 @@ struct swallow_assign {
     return *this;
   }
 };
-} // namespace tuples
+
 } // namespace detail
 
 // "ignore" allows tuple positions to be ignored when using "tie". 
 namespace {
- detail::tuples::swallow_assign ignore;
+ detail::swallow_assign ignore;
 }
 
 // ---------------------------------------------------------------------------
@@ -530,7 +524,7 @@ struct make_tuple_traits {
 template<class T>
 struct make_tuple_traits<T&> {
   typedef typename
-     detail::tuples::generate_error<T&>::
+     detail::generate_error<T&>::
        do_not_use_with_reference_type error;
 }; 
 
@@ -570,7 +564,6 @@ struct make_tuple_traits<const reference_wrapper<T> >{
 
 
 namespace detail {
-namespace tuples {
 
 // a helper traits to make the make_tuple functions shorter (Vesa Karvonen's
 // suggestion)
@@ -594,7 +587,6 @@ struct make_tuple_mapper {
           typename make_tuple_traits<T9>::type> type;
 };
 
-} // end tuples
 } // end detail
 
 // -make_tuple function templates -----------------------------------
@@ -603,85 +595,85 @@ inline tuple<> make_tuple() {
 }
 
 template<class T0>
-inline typename boost::detail::tuples::make_tuple_mapper<T0>::type
+inline typename detail::make_tuple_mapper<T0>::type
 make_tuple(const T0& t0) {
-  return typename boost::detail::tuples::make_tuple_mapper<T0>::type(t0); 
+  return typename detail::make_tuple_mapper<T0>::type(t0); 
 }
 
 template<class T0, class T1>
-inline typename boost::detail::tuples::make_tuple_mapper<T0, T1>::type
+inline typename detail::make_tuple_mapper<T0, T1>::type
 make_tuple(const T0& t0, const T1& t1) {
-  return typename boost::detail::tuples::make_tuple_mapper<T0, T1>::type(t0, t1); 
+  return typename detail::make_tuple_mapper<T0, T1>::type(t0, t1); 
 }
 
 template<class T0, class T1, class T2>
-inline typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2>::type
+inline typename detail::make_tuple_mapper<T0, T1, T2>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2) {
-  return typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2>::type(t0, t1, t2); 
+  return typename detail::make_tuple_mapper<T0, T1, T2>::type(t0, t1, t2); 
 }
 
 template<class T0, class T1, class T2, class T3>
-inline typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3>::type
+inline typename detail::make_tuple_mapper<T0, T1, T2, T3>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3) {
-  return typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3>::type
+  return typename detail::make_tuple_mapper<T0, T1, T2, T3>::type
            (t0, t1, t2, t3); 
 }
 
 template<class T0, class T1, class T2, class T3, class T4>
-inline typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3, T4>::type
+inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
                   const T4& t4) {
-  return typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3, T4>::type
+  return typename detail::make_tuple_mapper<T0, T1, T2, T3, T4>::type
            (t0, t1, t2, t3, t4); 
 }
 
 template<class T0, class T1, class T2, class T3, class T4, class T5>
-inline typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type
+inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
                   const T4& t4, const T5& t5) {
-  return typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type
+  return typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type
            (t0, t1, t2, t3, t4, t5); 
 }
 
 template<class T0, class T1, class T2, class T3, class T4, class T5, class T6>
-inline typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6>::type
+inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
                   const T4& t4, const T5& t5, const T6& t6) {
-  return typename boost::detail::tuples::make_tuple_mapper
+  return typename detail::make_tuple_mapper
            <T0, T1, T2, T3, T4, T5, T6>::type
            (t0, t1, t2, t3, t4, t5, t6); 
 }
 
 template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
          class T7>
-inline typename boost::detail::tuples::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6, T7>::type
+inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6, T7>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
                   const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
-  return typename boost::detail::tuples::make_tuple_mapper
+  return typename detail::make_tuple_mapper
            <T0, T1, T2, T3, T4, T5, T6, T7>::type
            (t0, t1, t2, t3, t4, t5, t6, t7); 
 }
 
 template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
          class T7, class T8>
-inline typename boost::detail::tuples::make_tuple_mapper
+inline typename detail::make_tuple_mapper
   <T0, T1, T2, T3, T4, T5, T6, T7, T8>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
                   const T4& t4, const T5& t5, const T6& t6, const T7& t7,
                   const T8& t8) {
-  return typename boost::detail::tuples::make_tuple_mapper
+  return typename detail::make_tuple_mapper
            <T0, T1, T2, T3, T4, T5, T6, T7, T8>::type
            (t0, t1, t2, t3, t4, t5, t6, t7, t8); 
 }
 
 template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
          class T7, class T8, class T9>
-inline typename boost::detail::tuples::make_tuple_mapper
+inline typename detail::make_tuple_mapper
   <T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type
 make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
                   const T4& t4, const T5& t5, const T6& t6, const T7& t7,
                   const T8& t8, const T9& t9) {
-  return typename boost::detail::tuples::make_tuple_mapper
+  return typename detail::make_tuple_mapper
            <T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type
            (t0, t1, t2, t3, t4, t5, t6, t7, t8, t9); 
 }
@@ -753,6 +745,7 @@ tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8,
            (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10);
 }
 
+} // end of namespace tuples
 } // end of namespace boost
 
 

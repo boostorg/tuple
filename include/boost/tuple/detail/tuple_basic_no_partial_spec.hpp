@@ -41,6 +41,7 @@
 #endif
 
 namespace boost {
+namespace tuples {
 
     // null_type denotes the end of a list built with "cons"
     struct null_type 
@@ -53,7 +54,7 @@ namespace boost {
     inline const null_type cnull_type() { return null_type(); }
 
     namespace detail {
-    namespace tuples {
+
       // Takes a pointer and routes all assignments to whatever it points to
       template<typename T>
       struct assign_to_pointee
@@ -82,7 +83,6 @@ namespace boost {
         }
       };
 
-  } // end of namespace tuples
   } // end of namespace detail
 
     // cons builds a heterogenous list of types
@@ -133,7 +133,7 @@ namespace boost {
     };
   
     namespace detail {
-    namespace tuples {
+
       // Determines if the parameter is null_type
       template<typename T> struct is_null_type { enum { RET = 0 }; };
       template<> struct is_null_type<null_type> { enum { RET = 1 }; };
@@ -170,16 +170,16 @@ namespace boost {
       >
       struct map_tuple_to_cons
       {
-        typedef typename detail::tuples::build_cons<T10, null_type  >::RET cons10;
-        typedef typename detail::tuples::build_cons<T9, cons10>::RET cons9;
-        typedef typename detail::tuples::build_cons<T8, cons9>::RET cons8;
-        typedef typename detail::tuples::build_cons<T7, cons8>::RET cons7;
-        typedef typename detail::tuples::build_cons<T6, cons7>::RET cons6;
-        typedef typename detail::tuples::build_cons<T5, cons6>::RET cons5;
-        typedef typename detail::tuples::build_cons<T4, cons5>::RET cons4;
-        typedef typename detail::tuples::build_cons<T3, cons4>::RET cons3;
-        typedef typename detail::tuples::build_cons<T2, cons3>::RET cons2;
-        typedef typename detail::tuples::build_cons<T1, cons2>::RET cons1;
+        typedef typename detail::build_cons<T10, null_type  >::RET cons10;
+        typedef typename detail::build_cons<T9, cons10>::RET cons9;
+        typedef typename detail::build_cons<T8, cons9>::RET cons8;
+        typedef typename detail::build_cons<T7, cons8>::RET cons7;
+        typedef typename detail::build_cons<T6, cons7>::RET cons6;
+        typedef typename detail::build_cons<T5, cons6>::RET cons5;
+        typedef typename detail::build_cons<T4, cons5>::RET cons4;
+        typedef typename detail::build_cons<T3, cons4>::RET cons3;
+        typedef typename detail::build_cons<T2, cons3>::RET cons2;
+        typedef typename detail::build_cons<T1, cons2>::RET cons1;
       };
 
       // Workaround the lack of partial specialization in some compilers
@@ -207,15 +207,16 @@ namespace boost {
           typedef typename Tuple::head_type RET;
         };
       };
-    } // detail
-    } // tuples
+
+    } // namespace detail
+
 
     // Return the Nth type of the given Tuple
     template<int N, typename Tuple>
     struct tuple_element
     {
     private:
-      typedef detail::tuples::_element_type<N> nth_type;
+      typedef detail::_element_type<N> nth_type;
 
     public:
       typedef typename nth_type::template inner<Tuple>::RET RET;
@@ -223,7 +224,7 @@ namespace boost {
     };
 
     namespace detail {
-    namespace tuples {
+
       // Return a reference to the Nth type of the given Tuple
       template<int N, typename Tuple>
       struct tuple_element_ref
@@ -247,8 +248,9 @@ namespace boost {
         typedef typename add_reference<const elt_type>::type RET;
         typedef RET type;
       };
-    }
-    }
+
+    } // namespace detail
+
     // Get length of this tuple
     template<typename Tuple>
     struct tuple_length
@@ -268,7 +270,7 @@ namespace boost {
     {
       template<typename Head, typename Tail>
       static inline
-      typename detail::tuples::tuple_element_ref<N, cons<Head, Tail> >::RET
+      typename detail::tuple_element_ref<N, cons<Head, Tail> >::RET
       get(cons<Head, Tail>& t)
       {
         return element<N-1>::get(t.tail);
@@ -276,7 +278,7 @@ namespace boost {
 
       template<typename Head, typename Tail>
       static inline
-      typename detail::tuples::tuple_element_const_ref<N, cons<Head, Tail> >::RET
+      typename detail::tuple_element_const_ref<N, cons<Head, Tail> >::RET
       get(const cons<Head, Tail>& t)
       {
         return element<N-1>::get(t.tail);
@@ -317,10 +319,10 @@ namespace boost {
       typename T10 = null_type
     >
     class tuple : 
-      public detail::tuples::map_tuple_to_cons<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>::cons1
+      public detail::map_tuple_to_cons<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>::cons1
     {
     private:
-      typedef detail::tuples::map_tuple_to_cons<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> mapped_tuple;
+      typedef detail::map_tuple_to_cons<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> mapped_tuple;
       typedef typename mapped_tuple::cons10 cons10;
       typedef typename mapped_tuple::cons9 cons9;
       typedef typename mapped_tuple::cons8 cons8;
@@ -374,20 +376,21 @@ namespace boost {
     };
 
     namespace detail {
-    namespace tuples {
+
       template<int N> struct workaround_holder {};
-    }}
+
+    } // namespace detail
 
     template<int N, typename Head, typename Tail>
-    typename detail::tuples::tuple_element_ref<N, cons<Head, Tail> >::RET
-    get(cons<Head, Tail>& t, detail::tuples::workaround_holder<N>* = 0)
+    typename detail::tuple_element_ref<N, cons<Head, Tail> >::RET
+    get(cons<Head, Tail>& t, detail::workaround_holder<N>* = 0)
     {
       return element<N>::get(t);
     }
 
     template<int N, typename Head, typename Tail>
-    typename detail::tuples::tuple_element_const_ref<N, cons<Head, Tail> >::RET
-    get(const cons<Head, Tail>& t, detail::tuples::workaround_holder<N>* = 0)
+    typename detail::tuple_element_const_ref<N, cons<Head, Tail> >::RET
+    get(const cons<Head, Tail>& t, detail::workaround_holder<N>* = 0)
     {
       return element<N>::get(t);
     }
@@ -485,185 +488,186 @@ namespace boost {
     // Tie variables into a tuple
     template<typename T1>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1> >
+    tuple<detail::assign_to_pointee<T1> >
     tie(T1& t1)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2> >
     tie(T1& t1, T2& t2)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3> >
     tie(T1& t1, T2& t2, T3& t3)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3, typename T4>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3>, 
-      detail::tuples::assign_to_pointee<T4> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3>, 
+      detail::assign_to_pointee<T4> >
     tie(T1& t1, T2& t2, T3& t3, T4& t4)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3),
-                        detail::tuples::assign_to_pointee<T4>(&t4));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3),
+                        detail::assign_to_pointee<T4>(&t4));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3, typename T4, typename T5>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3>, 
-      detail::tuples::assign_to_pointee<T4>, 
-      detail::tuples::assign_to_pointee<T5> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3>, 
+      detail::assign_to_pointee<T4>, 
+      detail::assign_to_pointee<T5> >
     tie(T1& t1, T2& t2, T3& t3, T4& t4, T5 &t5)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3),
-                        detail::tuples::assign_to_pointee<T4>(&t4),
-                        detail::tuples::assign_to_pointee<T5>(&t5));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3),
+                        detail::assign_to_pointee<T4>(&t4),
+                        detail::assign_to_pointee<T5>(&t5));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3>, 
-      detail::tuples::assign_to_pointee<T4>, 
-      detail::tuples::assign_to_pointee<T5>, 
-      detail::tuples::assign_to_pointee<T6> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3>, 
+      detail::assign_to_pointee<T4>, 
+      detail::assign_to_pointee<T5>, 
+      detail::assign_to_pointee<T6> >
     tie(T1& t1, T2& t2, T3& t3, T4& t4, T5 &t5, T6 &t6)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3),
-                        detail::tuples::assign_to_pointee<T4>(&t4),
-                        detail::tuples::assign_to_pointee<T6>(&t5),
-                        detail::tuples::assign_to_pointee<T5>(&t6));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3),
+                        detail::assign_to_pointee<T4>(&t4),
+                        detail::assign_to_pointee<T6>(&t5),
+                        detail::assign_to_pointee<T5>(&t6));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3>, 
-      detail::tuples::assign_to_pointee<T4>, 
-      detail::tuples::assign_to_pointee<T5>, 
-      detail::tuples::assign_to_pointee<T6>, 
-      detail::tuples::assign_to_pointee<T7> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3>, 
+      detail::assign_to_pointee<T4>, 
+      detail::assign_to_pointee<T5>, 
+      detail::assign_to_pointee<T6>, 
+      detail::assign_to_pointee<T7> >
     tie(T1& t1, T2& t2, T3& t3, T4& t4, T5 &t5, T6 &t6, T7 &t7)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3),
-                        detail::tuples::assign_to_pointee<T4>(&t4),
-                        detail::tuples::assign_to_pointee<T5>(&t5),
-                        detail::tuples::assign_to_pointee<T6>(&t6),
-                        detail::tuples::assign_to_pointee<T7>(&t7));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3),
+                        detail::assign_to_pointee<T4>(&t4),
+                        detail::assign_to_pointee<T5>(&t5),
+                        detail::assign_to_pointee<T6>(&t6),
+                        detail::assign_to_pointee<T7>(&t7));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3>, 
-      detail::tuples::assign_to_pointee<T4>, 
-      detail::tuples::assign_to_pointee<T5>, 
-      detail::tuples::assign_to_pointee<T6>, 
-      detail::tuples::assign_to_pointee<T7>, 
-      detail::tuples::assign_to_pointee<T8> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3>, 
+      detail::assign_to_pointee<T4>, 
+      detail::assign_to_pointee<T5>, 
+      detail::assign_to_pointee<T6>, 
+      detail::assign_to_pointee<T7>, 
+      detail::assign_to_pointee<T8> >
     tie(T1& t1, T2& t2, T3& t3, T4& t4, T5 &t5, T6 &t6, T7 &t7, T8 &t8)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3),
-                        detail::tuples::assign_to_pointee<T4>(&t4),
-                        detail::tuples::assign_to_pointee<T5>(&t5),
-                        detail::tuples::assign_to_pointee<T6>(&t6),
-                        detail::tuples::assign_to_pointee<T7>(&t7),
-                        detail::tuples::assign_to_pointee<T8>(&t8));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3),
+                        detail::assign_to_pointee<T4>(&t4),
+                        detail::assign_to_pointee<T5>(&t5),
+                        detail::assign_to_pointee<T6>(&t6),
+                        detail::assign_to_pointee<T7>(&t7),
+                        detail::assign_to_pointee<T8>(&t8));
     }
 
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3>, 
-      detail::tuples::assign_to_pointee<T4>, 
-      detail::tuples::assign_to_pointee<T5>, 
-      detail::tuples::assign_to_pointee<T6>, 
-      detail::tuples::assign_to_pointee<T7>, 
-      detail::tuples::assign_to_pointee<T8>, 
-      detail::tuples::assign_to_pointee<T9> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3>, 
+      detail::assign_to_pointee<T4>, 
+      detail::assign_to_pointee<T5>, 
+      detail::assign_to_pointee<T6>, 
+      detail::assign_to_pointee<T7>, 
+      detail::assign_to_pointee<T8>, 
+      detail::assign_to_pointee<T9> >
     tie(T1& t1, T2& t2, T3& t3, T4& t4, T5 &t5, T6 &t6, T7 &t7, T8 &t8, T9 &t9)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3),
-                        detail::tuples::assign_to_pointee<T4>(&t4),
-                        detail::tuples::assign_to_pointee<T5>(&t5),
-                        detail::tuples::assign_to_pointee<T6>(&t6),
-                        detail::tuples::assign_to_pointee<T7>(&t7),
-                        detail::tuples::assign_to_pointee<T8>(&t8),
-                        detail::tuples::assign_to_pointee<T9>(&t9));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3),
+                        detail::assign_to_pointee<T4>(&t4),
+                        detail::assign_to_pointee<T5>(&t5),
+                        detail::assign_to_pointee<T6>(&t6),
+                        detail::assign_to_pointee<T7>(&t7),
+                        detail::assign_to_pointee<T8>(&t8),
+                        detail::assign_to_pointee<T9>(&t9));
     }
     // Tie variables into a tuple
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10>
     inline
-    tuple<detail::tuples::assign_to_pointee<T1>, 
-      detail::tuples::assign_to_pointee<T2>, 
-      detail::tuples::assign_to_pointee<T3>, 
-      detail::tuples::assign_to_pointee<T4>, 
-      detail::tuples::assign_to_pointee<T5>, 
-      detail::tuples::assign_to_pointee<T6>, 
-      detail::tuples::assign_to_pointee<T7>, 
-      detail::tuples::assign_to_pointee<T8>, 
-      detail::tuples::assign_to_pointee<T9>, 
-      detail::tuples::assign_to_pointee<T10> >
+    tuple<detail::assign_to_pointee<T1>, 
+      detail::assign_to_pointee<T2>, 
+      detail::assign_to_pointee<T3>, 
+      detail::assign_to_pointee<T4>, 
+      detail::assign_to_pointee<T5>, 
+      detail::assign_to_pointee<T6>, 
+      detail::assign_to_pointee<T7>, 
+      detail::assign_to_pointee<T8>, 
+      detail::assign_to_pointee<T9>, 
+      detail::assign_to_pointee<T10> >
     tie(T1& t1, T2& t2, T3& t3, T4& t4, T5 &t5, T6 &t6, T7 &t7, T8 &t8, T9 &t9, T10 &t10)
     {
-      return make_tuple(detail::tuples::assign_to_pointee<T1>(&t1),
-                        detail::tuples::assign_to_pointee<T2>(&t2),
-                        detail::tuples::assign_to_pointee<T3>(&t3),
-                        detail::tuples::assign_to_pointee<T4>(&t4),
-                        detail::tuples::assign_to_pointee<T5>(&t5),
-                        detail::tuples::assign_to_pointee<T6>(&t6),
-                        detail::tuples::assign_to_pointee<T7>(&t7),
-                        detail::tuples::assign_to_pointee<T8>(&t8),
-                        detail::tuples::assign_to_pointee<T9>(&t9),
-                        detail::tuples::assign_to_pointee<T10>(&t10));
+      return make_tuple(detail::assign_to_pointee<T1>(&t1),
+                        detail::assign_to_pointee<T2>(&t2),
+                        detail::assign_to_pointee<T3>(&t3),
+                        detail::assign_to_pointee<T4>(&t4),
+                        detail::assign_to_pointee<T5>(&t5),
+                        detail::assign_to_pointee<T6>(&t6),
+                        detail::assign_to_pointee<T7>(&t7),
+                        detail::assign_to_pointee<T8>(&t8),
+                        detail::assign_to_pointee<T9>(&t9),
+                        detail::assign_to_pointee<T10>(&t10));
     }
     // "ignore" allows tuple positions to be ignored when using "tie". 
     namespace {
-      detail::tuples::swallow_assign ignore;
+      detail::swallow_assign ignore;
     }
 
+} // namespace tuples
 } // namespace boost
 #endif // BOOST_TUPLE_BASIC_NO_PARTIAL_SPEC_HPP
