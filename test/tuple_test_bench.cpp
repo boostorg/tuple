@@ -1,8 +1,5 @@
 //  tuple_test_bench.cpp  --------------------------------
 
-// Defining any of E1 to E5 or E7 to E11 opens some illegal code that 
-// should cause the compliation to fail.
-
 #define BOOST_INCLUDE_MAIN  // for testing, include rather than link
 #include <boost/test/test_tools.hpp>    // see "Header Implementation Option"
 
@@ -12,10 +9,6 @@
 
 #include <string>
 #include <utility>
-#include <vector>
-#include <algorithm>
-#include <functional>
-#include <iostream>
 
 using namespace std;
 using namespace boost;
@@ -96,54 +89,46 @@ no_copy y;
 tuple<no_copy&> x = tuple<no_copy&>(y); // ok
 #endif
 
-#ifdef E1
-tuple<no_copy> v1;  // should faild
-#endif
-
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
 char cs[10];
 tuple<char(&)[10]> v2(cs);  // ok
 #endif
 
-#ifdef E2
-tuple<char[10]> v3;  // should fail, arrays must be stored as references
-#endif
-
 void
 construction_test()
 {
+ 
+  // Note, the get function can be called without the tuples:: qualifier,
+  // as it is lifted to namespace boost with a "using tuples::get" but
+  // MSVC 6.0 just cannot find get without the namespace qualifier
+
   tuple<int> t1; 
-  BOOST_TEST(get<0>(t1) == int());
+  BOOST_TEST(tuples::get<0>(t1) == int());
   
   tuple<float> t2(5.5f);
-  BOOST_TEST(get<0>(t2) > 5.4f && get<0>(t2) < 5.6f);
+  BOOST_TEST(tuples::get<0>(t2) > 5.4f && tuples::get<0>(t2) < 5.6f);
 
   tuple<foo> t3(foo(12));
-  BOOST_TEST(get<0>(t3) == foo(12));
+  BOOST_TEST(tuples::get<0>(t3) == foo(12));
 
   tuple<double> t4(t2);
-  BOOST_TEST(get<0>(t4) > 5.4 && get<0>(t4) < 5.6);
+  BOOST_TEST(tuples::get<0>(t4) > 5.4 && tuples::get<0>(t4) < 5.6);
 
   tuple<int, float> t5;
-  BOOST_TEST(get<0>(t5) == int());
-  BOOST_TEST(get<1>(t5) == float());
+  BOOST_TEST(tuples::get<0>(t5) == int());
+  BOOST_TEST(tuples::get<1>(t5) == float());
 
   tuple<int, float> t6(12, 5.5f);
-  BOOST_TEST(get<0>(t6) == 12);
-  BOOST_TEST(get<1>(t6) > 5.4f && get<1>(t6) < 5.6f);
+  BOOST_TEST(tuples::get<0>(t6) == 12);
+  BOOST_TEST(tuples::get<1>(t6) > 5.4f && tuples::get<1>(t6) < 5.6f);
 
   tuple<int, float> t7(t6);
-  BOOST_TEST(get<0>(t7) == 12);
-  BOOST_TEST(get<1>(t7) > 5.4f && get<1>(t7) < 5.6f);
+  BOOST_TEST(tuples::get<0>(t7) == 12);
+  BOOST_TEST(tuples::get<1>(t7) > 5.4f && tuples::get<1>(t7) < 5.6f);
 
   tuple<long, double> t8(t6);
-  BOOST_TEST(get<0>(t8) == 12);
-  BOOST_TEST(get<1>(t8) > 5.4f && get<1>(t8) < 5.6f);
-
-#ifdef E3
-  dummy(tuple<no_def_constructor, no_def_constructor, no_def_constructor>()); 
-  // should fail
-#endif
+  BOOST_TEST(tuples::get<0>(t8) == 12);
+  BOOST_TEST(tuples::get<1>(t8) > 5.4f && tuples::get<1>(t8) < 5.6f);
 
   dummy( 
     tuple<no_def_constructor, no_def_constructor, no_def_constructor>(
@@ -158,11 +143,9 @@ construction_test()
   dummy(tuple<int, double>(1));
   dummy(tuple<int, double>(1,3.14)); 
 
-#ifdef E4
-  dummy(tuple<double&>()); // should fail, not defaults for references
-  dummy(tuple<const double&>()); // likewise
-#endif
 
+  //  dummy(tuple<double&>()); // should fail, not defaults for references
+  //  dummy(tuple<const double&>()); // likewise
 
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
   double dd = 5;
@@ -171,10 +154,8 @@ construction_test()
   dummy(tuple<const double&>(dd+3.14)); // ok, but dangerous
 #endif
 
-#ifdef E5
-  dummy(tuple<double&>(dd+3.14)); // should fail, 
-                                  // temporary to non-const reference
-#endif
+  //  dummy(tuple<double&>(dd+3.14)); // should fail, 
+  //                                  // temporary to non-const reference
 
 }
 
@@ -191,32 +172,26 @@ void element_access_test()
   tuple<int, double&, const A&> t(1, d, a);
   const tuple<int, double&, const A> ct = t;
 
-  int i = get<0>(t);
-  int j = get<0>(ct);
+  int i = tuples::get<0>(t);
+  int j = tuples::get<0>(ct);
   BOOST_TEST(i == 1 && j == 1);
    
-  get<0>(t) = 5;
+  tuples::get<0>(t) = 5;
   BOOST_TEST(t.head == 5);
    
-#ifdef E8
-  get<0>(ct) = 5; // can't assign to const
-#endif
+  //  tuples::get<0>(ct) = 5; // can't assign to const
 
-  double e = get<1>(t);
+  double e = tuples::get<1>(t);
   BOOST_TEST(e > 2.69 && e < 2.71);
 	     
-  get<1>(t) = 3.14+i;
-  BOOST_TEST(get<1>(t) > 4.13 && get<1>(t) < 4.15);
+  tuples::get<1>(t) = 3.14+i;
+  BOOST_TEST(tuples::get<1>(t) > 4.13 && tuples::get<1>(t) < 4.15);
 
-#ifdef E9
-  get<4>(t) = A(); // can't assign to const
-#endif
-#ifdef E10
-  dummy(get<5>(ct)); // illegal index
-#endif
+  //  tuples::get<4>(t) = A(); // can't assign to const
+  //  dummy(tuples::get<5>(ct)); // illegal index
 
-  ++get<0>(t);
-  BOOST_TEST(get<0>(t) == 6);
+  ++tuples::get<0>(t);
+  BOOST_TEST(tuples::get<0>(t) == 6);
 
   dummy(i); dummy(j); dummy(e); // avoid warns for unused variables
 #endif
@@ -235,13 +210,13 @@ copy_test()
   tuple<int, char> t1(4, 'a');
   tuple<int, char> t2(5, 'b');
   t2 = t1;
-  BOOST_TEST(get<0>(t1) == get<0>(t2));
-  BOOST_TEST(get<1>(t1) == get<1>(t2));
+  BOOST_TEST(tuples::get<0>(t1) == tuples::get<0>(t2));
+  BOOST_TEST(tuples::get<1>(t1) == tuples::get<1>(t2));
 
   tuple<long, std::string> t3(2, "a");
   t3 = t1;
-  BOOST_TEST((double)get<0>(t1) == get<0>(t3));
-  BOOST_TEST(get<1>(t1) == get<1>(t3)[0]);
+  BOOST_TEST((double)tuples::get<0>(t1) == tuples::get<0>(t3));
+  BOOST_TEST(tuples::get<1>(t1) == tuples::get<1>(t3)[0]);
 
 // testing copy and assignment with implicit conversions between elements
 // testing tie
@@ -262,15 +237,15 @@ void
 mutate_test()
 {
   tuple<int, float, bool, foo> t1(5, 12.2f, true, foo(4));
-  get<0>(t1) = 6;
-  get<1>(t1) = 2.2f;
-  get<2>(t1) = false;
-  get<3>(t1) = foo(5);
+  tuples::get<0>(t1) = 6;
+  tuples::get<1>(t1) = 2.2f;
+  tuples::get<2>(t1) = false;
+  tuples::get<3>(t1) = foo(5);
 
-  BOOST_TEST(get<0>(t1) == 6);
-  BOOST_TEST(get<1>(t1) > 2.1f && get<1>(t1) < 2.3f);
-  BOOST_TEST(get<2>(t1) == false);
-  BOOST_TEST(get<3>(t1) == foo(5));
+  BOOST_TEST(tuples::get<0>(t1) == 6);
+  BOOST_TEST(tuples::get<1>(t1) > 2.1f && tuples::get<1>(t1) < 2.3f);
+  BOOST_TEST(tuples::get<2>(t1) == false);
+  BOOST_TEST(tuples::get<3>(t1) == foo(5));
 }
 
 // ----------------------------------------------------------------------------
@@ -281,13 +256,13 @@ void
 make_tuple_test()
 {
   tuple<int, char> t1 = make_tuple(5, 'a');
-  BOOST_TEST(get<0>(t1) == 5);
-  BOOST_TEST(get<1>(t1) == 'a');
+  BOOST_TEST(tuples::get<0>(t1) == 5);
+  BOOST_TEST(tuples::get<1>(t1) == 'a');
 
   tuple<int, std::string> t2;
   t2 = make_tuple((short int)2, std::string("Hi"));
-  BOOST_TEST(get<0>(t2) == 2);
-  BOOST_TEST(get<1>(t2) == "Hi");
+  BOOST_TEST(tuples::get<0>(t2) == 2);
+  BOOST_TEST(tuples::get<1>(t2) == "Hi");
 
 
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
@@ -307,9 +282,7 @@ make_tuple_test()
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
     make_tuple("Donald", "Daisy"); // should work;
 #endif
-#ifdef E7
-    std::make_pair("Doesn't","Work"); // fails
-#endif
+    //    std::make_pair("Doesn't","Work"); // fails
 
 // You can store a reference to a function in a tuple
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
@@ -442,8 +415,8 @@ void cons_test()
 void const_tuple_test()
 {
   const tuple<int, float> t1(5, 3.3f);
-  BOOST_TEST(get<0>(t1) == 5);
-  BOOST_TEST(get<1>(t1) == 3.3f);
+  BOOST_TEST(tuples::get<0>(t1) == 5);
+  BOOST_TEST(tuples::get<1>(t1) == 3.3f);
 }
 
 
