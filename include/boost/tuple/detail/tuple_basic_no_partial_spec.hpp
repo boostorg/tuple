@@ -115,6 +115,12 @@ namespace tuples {
       }
 
 #else
+      template<typename T>
+      explicit cons(const head_type& h, const T& t) : 
+        head(h), tail(t.head, t.tail)
+      {
+      }
+
       explicit cons(const head_type& h = head_type(),
                     const tail_type& t = tail_type()) :
         head(h), tail(t)
