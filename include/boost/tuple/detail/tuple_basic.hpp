@@ -22,6 +22,9 @@
 // William Kempf, Vesa Karvonen, John Max Skaller, Ed Brey, Beman Davis,
 // David Abrahams.
 
+// Revision history:
+// 2001 08 30 David Abrahams
+//      Added default constructor for cons<>.
 // ----------------------------------------------------------------- 
 
 #ifndef BOOST_TUPLE_BASIC_HPP
@@ -226,6 +229,10 @@ struct cons {
   typename tuple_access_traits<tail_type>::const_type 
   get_tail() const { return tail; }  
 
+  cons()
+    : head(detail::tuples::default_arg<HT>::f()), tail()
+    {}
+    
   cons(typename tuple_access_traits<head_type>::parameter_type h,
        const tail_type& t)
     : head (h), tail(t) {}  
@@ -293,7 +300,11 @@ struct cons<HT, null_type> {
   get_head() const { return head; }
   
   const null_type get_tail() const { return null_type(); }  
-  
+
+  cons()
+      : head(detail::tuples::default_arg<HT>::f())
+    {}
+
   cons(typename tuple_access_traits<head_type>::parameter_type h,
        const null_type& = null_type())
     : head (h) {}  
