@@ -59,7 +59,7 @@ template <
 class tuple; 
 
 // tuple_length forward declaration
-template<class T> struct tuple_length;
+template<class T> struct length;
 
 
 
@@ -106,24 +106,24 @@ struct default_arg<T&> {
 };
 
 // - cons getters --------------------------------------------------------
-// called: element<N>::get<RETURN_TYPE>(aTuple)
+// called: get_class<N>::get<RETURN_TYPE>(aTuple)
 
 template< int N >
-struct element {
+struct get_class {
   template<class RET, class HT, class TT >
   inline static RET get(const cons<HT, TT>& t)
   {
-    return element<N-1>::template get<RET>(t.tail);
+    return get_class<N-1>::template get<RET>(t.tail);
   }
   template<class RET, class HT, class TT >
   inline static RET get(cons<HT, TT>& t)
   {
-    return element<N-1>::template get<RET>(t.tail);
+    return get_class<N-1>::template get<RET>(t.tail);
   }
 };
 
 template<>
-struct element<0> {
+struct get_class<0> {
   template<class RET, class HT, class TT> 
   inline static RET get(const cons<HT, TT>& t)
   {
@@ -140,20 +140,20 @@ struct element<0> {
 
 
 // -cons type accessors ----------------------------------------
-// typename tuple_element<N,T>::type gets the type of the 
+// typename tuples::element<N,T>::type gets the type of the 
 // Nth element ot T, first element is at index 0
 // -------------------------------------------------------
 
 template<int N, class T>
-struct tuple_element
+struct element
 {
 private:
   typedef typename T::tail_type Next;
 public:
-  typedef typename tuple_element<N-1, Next>::type type;
+  typedef typename element<N-1, Next>::type type;
 };
 template<class T>
-struct tuple_element<0,T>
+struct element<0,T>
 {
   typedef typename T::head_type type;
 };
@@ -167,7 +167,7 @@ struct tuple_element<0,T>
 // (Joel de Guzman's suggestion). Rationale: get functions are part of the
 // interface, so should the way to express their return types be.
 
-template <class T> struct tuple_access_traits {
+template <class T> struct access_traits {
   typedef const T& const_type;
   typedef T& non_const_type;
 
@@ -179,7 +179,7 @@ template <class T> struct tuple_access_traits {
 // be non-volatile and const. 8.5.3. (5)
 };
 
-template <class T> struct tuple_access_traits<T&> {
+template <class T> struct access_traits<T&> {
 
   typedef T& const_type;
   typedef T& non_const_type;
@@ -191,14 +191,14 @@ template <class T> struct tuple_access_traits<T&> {
 // get function for non-const cons-lists, returns a reference to the element
 
 template<int N, class HT, class TT>
-inline typename tuple_access_traits<
-                  typename tuple_element<N, cons<HT, TT> >::type
+inline typename access_traits<
+                  typename element<N, cons<HT, TT> >::type
                 >::non_const_type
 get(cons<HT, TT>& c) { 
-  return detail::element<N>::template 
+  return detail::get_class<N>::template 
          get<
-           typename tuple_access_traits<
-             typename tuple_element<N, cons<HT, TT> >::type
+           typename access_traits<
+             typename element<N, cons<HT, TT> >::type
            >::non_const_type>(c); 
 } 
 
@@ -206,14 +206,14 @@ get(cons<HT, TT>& c) {
 // the element. If the element is a reference, returns the reference
 // as such (that is, can return a non-const reference)
 template<int N, class HT, class TT>
-inline typename tuple_access_traits<
-                  typename tuple_element<N, cons<HT, TT> >::type
+inline typename access_traits<
+                  typename element<N, cons<HT, TT> >::type
                 >::const_type
 get(const cons<HT, TT>& c) { 
-  return detail::element<N>::template 
+  return detail::get_class<N>::template 
          get<
-           typename tuple_access_traits<
-             typename tuple_element<N, cons<HT, TT> >::type
+           typename access_traits<
+             typename element<N, cons<HT, TT> >::type
          >::const_type>(c);
 } 
 
@@ -231,16 +231,16 @@ struct cons {
   head_type head;
   tail_type tail;
 
-  typename tuple_access_traits<head_type>::non_const_type 
+  typename access_traits<head_type>::non_const_type 
   get_head() { return head; }
 
-  typename tuple_access_traits<tail_type>::non_const_type 
+  typename access_traits<tail_type>::non_const_type 
   get_tail() { return tail; }  
 
-  typename tuple_access_traits<head_type>::const_type 
+  typename access_traits<head_type>::const_type 
   get_head() const { return head; }
   
-  typename tuple_access_traits<tail_type>::const_type 
+  typename access_traits<tail_type>::const_type 
   get_tail() const { return tail; }  
 
   cons() : head(detail::default_arg<HT>::f()), tail() {}
@@ -249,7 +249,7 @@ struct cons {
   // cannot be supported properly in any case (no assignment, 
   // copy works only if the tails are exactly the same type, ...)
   
-  cons(typename tuple_access_traits<head_type>::parameter_type h,
+  cons(typename access_traits<head_type>::parameter_type h,
        const tail_type& t)
     : head (h), tail(t) {}  
 
@@ -277,22 +277,22 @@ struct cons {
 
   template <class T1, class T2>
   cons& operator=( const std::pair<T1, T2>& u ) { 
-    BOOST_STATIC_ASSERT(tuple_length<cons>::value == 2); // check length = 2
+    BOOST_STATIC_ASSERT(length<cons>::value == 2); // check length = 2
     head = u.first; tail.head = u.second; return *this;
   }
 
   // get member functions (non-const and const)
   template <int N>
-  typename tuple_access_traits<
-             typename tuple_element<N, cons<HT, TT> >::type
+  typename access_traits<
+             typename element<N, cons<HT, TT> >::type
            >::non_const_type
   get() {
     return boost::get<N>(*this); // delegate to non-member get
   }
 
   template <int N>
-  typename tuple_access_traits<
-             typename tuple_element<N, cons<HT, TT> >::type
+  typename access_traits<
+             typename element<N, cons<HT, TT> >::type
            >::const_type
   get() const {
     return boost::get<N>(*this); // delegate to non-member get
@@ -307,19 +307,19 @@ struct cons<HT, null_type> {
 
   head_type head;
  
-  typename tuple_access_traits<head_type>::non_const_type 
+  typename access_traits<head_type>::non_const_type 
   get_head() { return head; }
   
   null_type get_tail() { return null_type(); }  
 
-  typename tuple_access_traits<head_type>::const_type 
+  typename access_traits<head_type>::const_type 
   get_head() const { return head; }
   
   const null_type get_tail() const { return null_type(); }  
 
   cons() : head(detail::default_arg<HT>::f()) {}
 
-  cons(typename tuple_access_traits<head_type>::parameter_type h,
+  cons(typename access_traits<head_type>::parameter_type h,
        const null_type& = null_type())
     : head (h) {}  
 
@@ -341,16 +341,16 @@ struct cons<HT, null_type> {
   cons& operator=(const cons& u) { head = u.head; return *this; }
 
   template <int N>
-  typename tuple_access_traits<
-             typename tuple_element<N, cons>::type
+  typename access_traits<
+             typename element<N, cons>::type
             >::non_const_type
   get() {
     return boost::get<N>(*this);
   }
 
   template <int N>
-  typename tuple_access_traits<
-             typename tuple_element<N, cons>::type
+  typename access_traits<
+             typename element<N, cons>::type
            >::const_type
   get() const {
     return boost::get<N>(*this);
@@ -361,12 +361,12 @@ struct cons<HT, null_type> {
 // templates for finding out the length of the tuple -------------------
 
 template<class T>
-struct tuple_length  {
-  BOOST_STATIC_CONSTANT(int, value = 1 + tuple_length<typename T::tail_type>::value);
+struct length  {
+  BOOST_STATIC_CONSTANT(int, value = 1 + length<typename T::tail_type>::value);
 };
 
 template<>
-struct tuple_length<null_type> {
+struct length<null_type> {
   BOOST_STATIC_CONSTANT(int, value = 0);
 };
 
@@ -408,27 +408,27 @@ public:
   typedef typename inherited::tail_type tail_type;  
 
 
-// tuple_access_traits<T>::parameter_type takes non-reference types as const T& 
+// access_traits<T>::parameter_type takes non-reference types as const T& 
   explicit tuple(
-    typename tuple_access_traits<T0>::parameter_type t0 
+    typename access_traits<T0>::parameter_type t0 
       = detail::default_arg<T0>::f(),
-    typename tuple_access_traits<T1>::parameter_type t1 
+    typename access_traits<T1>::parameter_type t1 
       = detail::default_arg<T1>::f(),
-    typename tuple_access_traits<T2>::parameter_type t2 
+    typename access_traits<T2>::parameter_type t2 
       = detail::default_arg<T2>::f(),
-    typename tuple_access_traits<T3>::parameter_type t3 
+    typename access_traits<T3>::parameter_type t3 
       = detail::default_arg<T3>::f(),
-    typename tuple_access_traits<T4>::parameter_type t4 
+    typename access_traits<T4>::parameter_type t4 
       = detail::default_arg<T4>::f(),
-    typename tuple_access_traits<T5>::parameter_type t5 
+    typename access_traits<T5>::parameter_type t5 
       = detail::default_arg<T5>::f(),
-    typename tuple_access_traits<T6>::parameter_type t6 
+    typename access_traits<T6>::parameter_type t6 
       = detail::default_arg<T6>::f(),
-    typename tuple_access_traits<T7>::parameter_type t7 
+    typename access_traits<T7>::parameter_type t7 
       = detail::default_arg<T7>::f(),
-    typename tuple_access_traits<T8>::parameter_type t8 
+    typename access_traits<T8>::parameter_type t8 
       = detail::default_arg<T8>::f(),
-    typename tuple_access_traits<T9>::parameter_type t9 
+    typename access_traits<T9>::parameter_type t9 
       = detail::default_arg<T9>::f())
 
         : inherited(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) {}
@@ -444,7 +444,7 @@ public:
 
   template <class U1, class U2>
   tuple& operator=(const std::pair<U1, U2>& k) { 
-    BOOST_STATIC_ASSERT(tuple_length<tuple>::value == 2);// check_length = 2
+    BOOST_STATIC_ASSERT(length<tuple>::value == 2);// check_length = 2
     this->head = k.first;
     this->tail.head = k.second; 
     return *this;

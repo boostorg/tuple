@@ -217,7 +217,7 @@ print(std::ostream& o, const cons<T1, T2>& t) {
   o << t.head;
 
 #if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-  if (tuple_length<T2>::value == 0)
+  if (tuples::length<T2>::value == 0)
 	return o;
 #endif  // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
   o << d;
@@ -254,7 +254,7 @@ print(std::basic_ostream<CharType, CharTrait>& o, const cons<T1, T2>& t) {
   o << t.head;
 
 #if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-  if (tuple_length<T2>::value == 0)
+  if (tuples::length<T2>::value == 0)
 	return o;
 #endif  // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
   o << d;
@@ -360,7 +360,7 @@ read(std::istream &is, cons<T1, T2>& t1) {
   is >> t1.head;
 
 #if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-  if (tuple_length<T2>::value == 0)
+  if (tuples::length<T2>::value == 0)
 	return is;
 #endif  // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
@@ -447,7 +447,7 @@ read(std::basic_istream<CharType, CharTrait> &is, cons<T1, T2>& t1) {
   is >> t1.head;
 
 #if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-  if (tuple_length<T2>::value == 0)
+  if (tuples::length<T2>::value == 0)
 	return is;
 #endif  // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 

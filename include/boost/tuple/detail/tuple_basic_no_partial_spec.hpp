@@ -219,7 +219,7 @@ namespace tuples {
 
     // Return the Nth type of the given Tuple
     template<int N, typename Tuple>
-    struct tuple_element
+    struct element
     {
     private:
       typedef detail::_element_type<N> nth_type;
@@ -233,10 +233,10 @@ namespace tuples {
 
       // Return a reference to the Nth type of the given Tuple
       template<int N, typename Tuple>
-      struct tuple_element_ref
+      struct element_ref
       {
       private:
-        typedef typename tuple_element<N, Tuple>::RET elt_type;
+        typedef typename element<N, Tuple>::RET elt_type;
 
       public:
         typedef typename add_reference<elt_type>::type RET;
@@ -245,10 +245,10 @@ namespace tuples {
 
       // Return a const reference to the Nth type of the given Tuple
       template<int N, typename Tuple>
-      struct tuple_element_const_ref
+      struct element_const_ref
       {
       private:
-        typedef typename tuple_element<N, Tuple>::RET elt_type;
+        typedef typename element<N, Tuple>::RET elt_type;
 
       public:
         typedef typename add_reference<const elt_type>::type RET;
@@ -259,40 +259,42 @@ namespace tuples {
 
     // Get length of this tuple
     template<typename Tuple>
-    struct tuple_length
+    struct length
     {
-      enum { value = 1 + tuple_length<typename Tuple::tail_type>::value };
+      BOOST_STATIC_CONSTANT(int, value = 1 + length<typename Tuple::tail_type>::value);
     };
 
     template<>
-    struct tuple_length<null_type>
+    struct length<null_type>
     {
-      enum { value = 0 };
+      BOOST_STATIC_CONSTANT(int, value = 0);
     };
+
+    namespace detail {
 
     // Reference the Nth element in a tuple and retrieve it with "get"
     template<int N>
-    struct element
+    struct get_class
     {
       template<typename Head, typename Tail>
       static inline
-      typename detail::tuple_element_ref<N, cons<Head, Tail> >::RET
+      typename detail::element_ref<N, cons<Head, Tail> >::RET
       get(cons<Head, Tail>& t)
       {
-        return element<N-1>::get(t.tail);
+        return get_class<N-1>::get(t.tail);
       }
 
       template<typename Head, typename Tail>
       static inline
-      typename detail::tuple_element_const_ref<N, cons<Head, Tail> >::RET
+      typename detail::element_const_ref<N, cons<Head, Tail> >::RET
       get(const cons<Head, Tail>& t)
       {
-        return element<N-1>::get(t.tail);
+        return get_class<N-1>::get(t.tail);
       }
     };
 
     template<>
-    struct element<0>
+    struct get_class<0>
     {
       template<typename Head, typename Tail>
       static inline
@@ -310,6 +312,8 @@ namespace tuples {
         return t.head;
       }
     };
+
+    } // namespace detail
 
     // tuple class
     template<
@@ -388,17 +392,17 @@ namespace tuples {
     } // namespace detail
 
     template<int N, typename Head, typename Tail>
-    typename detail::tuple_element_ref<N, cons<Head, Tail> >::RET
+    typename detail::element_ref<N, cons<Head, Tail> >::RET
     get(cons<Head, Tail>& t, detail::workaround_holder<N>* = 0)
     {
-      return element<N>::get(t);
+      return detail::get_class<N>::get(t);
     }
 
     template<int N, typename Head, typename Tail>
-    typename detail::tuple_element_const_ref<N, cons<Head, Tail> >::RET
+    typename detail::element_const_ref<N, cons<Head, Tail> >::RET
     get(const cons<Head, Tail>& t, detail::workaround_holder<N>* = 0)
     {
-      return element<N>::get(t);
+      return detail::get_class<N>::get(t);
     }
 
     // Make a tuple
