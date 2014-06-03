@@ -484,7 +484,7 @@ public:
 // access_traits<T>::parameter_type takes non-reference types as const T&
   tuple() {}
 
-  tuple(typename access_traits<T0>::parameter_type t0)
+  explicit tuple(typename access_traits<T0>::parameter_type t0)
     : inherited(t0, detail::cnull(), detail::cnull(), detail::cnull(),
                 detail::cnull(), detail::cnull(), detail::cnull(),
                 detail::cnull(), detail::cnull(), detail::cnull()) {}
