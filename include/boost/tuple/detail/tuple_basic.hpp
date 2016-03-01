@@ -41,7 +41,7 @@
 
 #include "boost/detail/workaround.hpp" // needed for BOOST_WORKAROUND
 
-#if BOOST_GCC >= 40700
+#if defined(BOOST_GCC) && (BOOST_GCC >= 40700)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #endif
@@ -979,7 +979,7 @@ inline void swap(tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& lhs,
 } // end of namespace boost
 
 
-#if BOOST_GCC >= 40700
+#if defined(BOOST_GCC) && (BOOST_GCC >= 40700)
 #pragma GCC diagnostic pop
 #endif
 
