@@ -35,11 +35,11 @@
 
 #include <utility> // needed for the assignment from pair to tuple
 
-#include "boost/type_traits/cv_traits.hpp"
-#include "boost/type_traits/function_traits.hpp"
-#include "boost/utility/swap.hpp"
+#include <boost/type_traits/cv_traits.hpp>
+#include <boost/type_traits/function_traits.hpp>
+#include <boost/utility/swap.hpp>
 
-#include "boost/detail/workaround.hpp" // needed for BOOST_WORKAROUND
+#include <boost/detail/workaround.hpp> // needed for BOOST_WORKAROUND
 
 #if defined(BOOST_GCC) && (BOOST_GCC >= 40700)
 #pragma GCC diagnostic push
@@ -985,5 +985,3 @@ inline void swap(tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>& lhs,
 
 
 #endif // BOOST_TUPLE_BASIC_HPP
-
-
