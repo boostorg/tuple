@@ -8,18 +8,17 @@
 
 //  tuple_test_bench.cpp  --------------------------------
 
-#define BOOST_INCLUDE_MAIN  // for testing, include rather than link
-#include <boost/test/test_tools.hpp>    // see "Header Implementation Option"
-
 #include "boost/tuple/tuple.hpp"
-
 #include "boost/tuple/tuple_comparison.hpp"
 
 #include "boost/type_traits/is_const.hpp"
-
 #include "boost/ref.hpp"
+#include "boost/core/lightweight_test.hpp"
+
 #include <string>
 #include <utility>
+
+#define BOOST_CHECK BOOST_TEST
 
 using namespace boost;
 
@@ -472,7 +471,7 @@ void tuple_swap_test()
 // - main ---------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-int test_main(int, char *[]) {
+int main() {
 
   construction_test();
   element_access_test();
@@ -486,12 +485,6 @@ int test_main(int, char *[]) {
   const_tuple_test();
   tuple_length_test();
   tuple_swap_test();
-  return 0;
+
+  return boost::report_errors();
 }
-
-
-
-
-
-
-
