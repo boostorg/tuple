@@ -37,6 +37,7 @@
 
 #include <boost/type_traits/cv_traits.hpp>
 #include <boost/type_traits/function_traits.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 #include <boost/utility/swap.hpp>
 
 #include <boost/detail/workaround.hpp> // needed for BOOST_WORKAROUND
@@ -420,28 +421,28 @@ struct cons<HT, null_type> {
 // templates for finding out the length of the tuple -------------------
 
 template<class T>
-struct length  {
-  BOOST_STATIC_CONSTANT(int, value = 1 + length<typename T::tail_type>::value);
+struct length: boost::integral_constant<int, 1 + length<typename T::tail_type>::value>
+{
 };
 
 template<>
-struct length<tuple<> > {
-  BOOST_STATIC_CONSTANT(int, value = 0);
+struct length<tuple<> >: boost::integral_constant<int, 0>
+{
 };
 
 template<>
-struct length<tuple<> const> {
-  BOOST_STATIC_CONSTANT(int, value = 0);
+struct length<tuple<> const>: boost::integral_constant<int, 0>
+{
 };
 
 template<>
-struct length<null_type> {
-  BOOST_STATIC_CONSTANT(int, value = 0);
+struct length<null_type>: boost::integral_constant<int, 0>
+{
 };
 
 template<>
-struct length<null_type const> {
-  BOOST_STATIC_CONSTANT(int, value = 0);
+struct length<null_type const>: boost::integral_constant<int, 0>
+{
 };
 
 namespace detail {
