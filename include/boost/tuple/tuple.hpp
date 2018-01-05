@@ -71,6 +71,11 @@ get(const tuples::cons<HT, TT>& c) {
 namespace std
 {
 
+#if defined(BOOST_CLANG)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wmismatched-tags"
+#endif
+
 // std::tuple_size
 
 template<class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10>
@@ -98,6 +103,10 @@ template<std::size_t I, class T1, class T2, class T3, class T4, class T5, class 
 template<std::size_t I, class H, class T> struct tuple_element< I, boost::tuples::cons<H, T> >: boost::tuples::element< I, boost::tuples::cons<H, T> >
 {
 };
+
+#if defined(BOOST_CLANG)
+# pragma clang diagnostic pop
+#endif
 
 } // namespace std
 
