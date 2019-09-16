@@ -102,7 +102,7 @@ class tuple_manipulator {
   CharType f_c;
 public:
   explicit tuple_manipulator(detail::format_info::manipulator_type m,
-                             const char c = 0)
+                             CharType c = CharType())
      : mt(m), f_c(c) {}
 
    template<class CharTrait>
