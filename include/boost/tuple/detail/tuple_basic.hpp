@@ -141,7 +141,7 @@ private:
   typedef BOOST_DEDUCED_TYPENAME detail::drop_front<N>::BOOST_NESTED_TEMPLATE
       apply<T>::type::head_type unqualified_type;
 public:
-#if BOOST_WORKAROUND(__BORLANDC__,<0x600)
+#if BOOST_WORKAROUND(BOOST_BORLANDC,<0x600)
   typedef const unqualified_type type;
 #else
   typedef BOOST_DEDUCED_TYPENAME boost::add_const<unqualified_type>::type type;

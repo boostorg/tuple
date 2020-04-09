@@ -81,7 +81,7 @@ typedef tuple<std::string, std::pair<A, B> > t4;
 typedef tuple<A*, tuple<const A*, const B&, C>, bool, void*> t5;
 typedef tuple<volatile int, const volatile char&, int(&)(float) > t6;
 
-# if !defined(__BORLANDC__) || __BORLAND__ > 0x0551
+# if !defined(BOOST_BORLANDC) || BOOST_BORLANDC > 0x0551
 typedef tuple<B(A::*)(C&), A&> t7;
 #endif
 
@@ -306,7 +306,7 @@ make_tuple_test()
   
 // With function pointers, make_tuple works just fine
 
-#if !defined(__BORLANDC__) || __BORLAND__ > 0x0551
+#if !defined(BOOST_BORLANDC) || BOOST_BORLANDC > 0x0551
    make_tuple(&make_tuple_test);
 #endif
       
