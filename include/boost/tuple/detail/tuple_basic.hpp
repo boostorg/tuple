@@ -34,6 +34,7 @@
 
 
 #include <utility> // needed for the assignment from pair to tuple
+#include <cstddef> // for std::size_t
 
 #include <boost/type_traits/cv_traits.hpp>
 #include <boost/type_traits/function_traits.hpp>
@@ -676,20 +677,20 @@ struct make_tuple_traits<T&> {
 // All arrays are converted to const. This is because make_tuple takes its
 // parameters as const T& and thus the knowledge of the potential
 // non-constness of actual argument is lost.
-template<class T, int n>  struct make_tuple_traits <T[n]> {
+template<class T, std::size_t n>  struct make_tuple_traits <T[n]> {
   typedef const T (&type)[n];
 };
 
-template<class T, int n>
+template<class T, std::size_t n>
 struct make_tuple_traits<const T[n]> {
   typedef const T (&type)[n];
 };
 
-template<class T, int n>  struct make_tuple_traits<volatile T[n]> {
+template<class T, std::size_t n>  struct make_tuple_traits<volatile T[n]> {
   typedef const volatile T (&type)[n];
 };
 
-template<class T, int n>
+template<class T, std::size_t n>
 struct make_tuple_traits<const volatile T[n]> {
   typedef const volatile T (&type)[n];
 };
