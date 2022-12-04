@@ -36,10 +36,10 @@
 #include <utility> // needed for the assignment from pair to tuple
 #include <cstddef> // for std::size_t
 
+#include <boost/core/swap.hpp>
 #include <boost/type_traits/cv_traits.hpp>
 #include <boost/type_traits/function_traits.hpp>
 #include <boost/type_traits/integral_constant.hpp>
-#include <boost/utility/swap.hpp>
 
 #include <boost/detail/workaround.hpp> // needed for BOOST_WORKAROUND
 
