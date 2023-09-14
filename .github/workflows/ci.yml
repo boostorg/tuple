@@ -209,29 +209,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,1 Job 7"
-            buildtype: "boost"
+          - buildtype: "boost"
             packages: ""
-            os: "macos-10.15"
+            os: "macos-11"
             cxx: "clang++"
             sources: ""
             llvm_os: ""
             llvm_ver: ""
-            xcode_version: 11.7
             toolset: "clang"
             compiler: "clang++"
-            cxxstd: "03,11,14,1z"
+            cxxstd: "03,11,14,17,2a"
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Set DEVELOPER_DIR
-        if: matrix.xcode_version != ''
-        run: echo "DEVELOPER_DIR=/Applications/Xcode_${{ matrix.xcode_version }}.app/Contents/Developer" >> $GITHUB_ENV
-      - name: Test DEVELOPER_DIR
-        run: echo $DEVELOPER_DIR
 
       - name: "osx"
         shell: bash
