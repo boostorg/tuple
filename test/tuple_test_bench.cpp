@@ -421,9 +421,9 @@ void cons_test()
 // ----------------------------------------------------------------------------
 void const_tuple_test()
 {
-  const tuple<int, float> t1(5, 3.3f);
+  const tuple<int, float> t1(5, 3.25f);
   BOOST_CHECK(get<0>(t1) == 5);
-  BOOST_CHECK(get<1>(t1) == 3.3f);
+  BOOST_CHECK(get<1>(t1) == 3.25f);
 }
 
 // ----------------------------------------------------------------------------
