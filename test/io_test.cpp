@@ -10,6 +10,8 @@
 //
 // Testing the I/O facilities of tuples
 
+#define _CRT_SECURE_NO_WARNINGS // std::tmpnam
+
 #include "boost/tuple/tuple_io.hpp"
 #include "boost/tuple/tuple_comparison.hpp"
 
@@ -20,6 +22,7 @@
 #include <algorithm>
 #include <string>
 #include <iomanip>
+#include <cstdio>
 
 #if defined BOOST_NO_STRINGSTREAM
 #include <strstream>
@@ -83,7 +86,9 @@ int main() {
   os4 << std::setw(10) << make_tuple(1, 2, 3);
   BOOST_CHECK (os4.str() == std::string("   (1 2 3)") );
 
-  std::ofstream tmp("temp.tmp");
+  std::string fn = std::tmpnam( 0 );
+
+  std::ofstream tmp( fn.c_str() );
 
 #if !defined (BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
   tmp << make_tuple("One", "Two", 3);
@@ -94,7 +99,7 @@ int main() {
   tmp.close();
   
   // When teading tuples from a stream, manipulators must be set correctly:
-  std::ifstream tmp3("temp.tmp");
+  std::ifstream tmp3( fn.c_str() );
   tuple<std::string, std::string, int> j;
 
 #if !defined (BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
@@ -109,6 +114,7 @@ int main() {
    
   tmp3.close(); 
 
+  std::remove( fn.c_str() );
 
   // reading tuple<int, int, int> in format (a b c); 
   useThisIStringStream is1("(100 200 300)"); 
